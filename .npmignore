@@ -1,0 +1,106 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Test files
+tests/
+benchmarks/
+examples/
+jest.config.*
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
+test-results/
+
+# Development files
+scripts/
+.github/
+.vscode/
+.idea/
+*.log
+*.tgz
+
+# Configuration files
+tsconfig.json
+tsup.config.ts
+.eslintrc.*
+.prettierrc.*
+.editorconfig
+.gitignore
+.npmrc
+
+# Documentation source files
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
+
+# Build artifacts
+*.map
+dist/**/*.map
+
+# CI/CD
+.travis.yml
+.gitlab-ci.yml
+appveyor.yml
+
+# Monitoring and reports
+monitoring/
+reports/
+*.json
+!package.json
+!package-lock.json
+
+# Temporary files
+tmp/
+temp/
+.cache/
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Development environment
+.env
+.env.*
+!.env.example
+
+# Node modules (just in case)
+node_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Package management
+yarn.lock
+pnpm-lock.yaml
+.pnpm-debug.log
+
+# Git files
+.git/
+.gitattributes
+
+# Husky
+.husky/
+
+# Lint staged
+.lintstagedrc*
+
+# Testing guarantee files
+TESTING.md
+TESTING_GUARANTEE.md
+MIGRATION_GUIDE.md

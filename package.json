@@ -1,0 +1,113 @@
+{
+  "name": "@oxog/termstyle",
+  "version": "1.0.1",
+  "description": "A powerful, feature-rich CLI text formatting library with zero dependencies. Supports colors, gradients, animations, progress bars, and more.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/termstyle/termstyle.git"
+  },
+  "homepage": "https://github.com/termstyle/termstyle#readme",
+  "bugs": {
+    "url": "https://github.com/termstyle/termstyle/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest --config jest.config.advanced.js",
+    "test:watch": "jest --config jest.config.advanced.js --watch",
+    "test:coverage": "jest --config jest.config.advanced.js --coverage",
+    "test:unit": "jest --config jest.config.advanced.js --testPathPattern=tests/unit",
+    "test:integration": "jest --config jest.config.advanced.js --testPathPattern=tests/integration",
+    "test:ci": "npm run lint && npm run typecheck && npm run test:coverage",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run test:ci && npm run build",
+    "precommit": "lint-staged"
+  },
+  "keywords": [
+    "cli",
+    "terminal",
+    "formatting",
+    "color",
+    "ansi",
+    "style",
+    "gradient",
+    "animation",
+    "console",
+    "command-line",
+    "text-styling",
+    "chalk-alternative",
+    "zero-dependency",
+    "progress-bar",
+    "spinner",
+    "box-drawing",
+    "rainbow",
+    "theming",
+    "typescript"
+  ],
+  "author": {
+    "name": "TermStyle",
+    "email": "info@termstyle.com"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-security": "^1.7.1",
+    "fast-check": "^3.15.0",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "jest-circus": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "jest-extended": "^4.0.2",
+    "jest-html-reporter": "^3.10.2",
+    "jest-junit": "^16.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
+    "tsup": "^8.0.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.5.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
