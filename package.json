@@ -31,7 +31,7 @@
     "test:unit": "jest --config jest.config.advanced.js --testPathPattern=tests/unit",
     "test:integration": "jest --config jest.config.advanced.js --testPathPattern=tests/integration",
     "test:ci": "npm run lint && npm run typecheck && npm run test:coverage",
-    "lint": "eslint src tests --ext .ts",
+    "lint": "eslint src tests --ext .ts --no-error-on-unmatched-pattern",
     "lint:fix": "eslint src tests --ext .ts --fix",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run test:ci && npm run build",

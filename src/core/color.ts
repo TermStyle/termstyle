@@ -177,9 +177,9 @@ export class ColorProcessor {
   private static hexToRGB = memoize((hex: string): RGB => {
     const normalized = InputValidator.validateHex(hex);
     return {
-      r: parseInt(normalized.substr(0, 2), 16),
-      g: parseInt(normalized.substr(2, 2), 16),
-      b: parseInt(normalized.substr(4, 2), 16)
+      r: parseInt(normalized.slice(0, 2), 16),
+      g: parseInt(normalized.slice(2, 4), 16),
+      b: parseInt(normalized.slice(4, 6), 16)
     };
   });
 

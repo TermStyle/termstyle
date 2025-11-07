@@ -83,7 +83,7 @@ export class Animation implements Disposable {
     };
     
     // Generate unique component ID for cursor management
-    this.componentId = `animation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.componentId = `animation-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
     // Register with ResourceManager for automatic cleanup
     ResourceManager.register(this);
@@ -360,7 +360,7 @@ export class Spinner implements Disposable {
     }
     
     // Generate unique component ID for cursor management
-    this.componentId = `spinner-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.componentId = `spinner-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     
     // Register with ResourceManager for automatic cleanup
     ResourceManager.register(this);
