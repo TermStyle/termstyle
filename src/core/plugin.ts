@@ -258,6 +258,11 @@ export class TablePlugin extends BasePlugin {
       // Parse JSON data from text
       let data: any[];
       try {
+        // Fix: Protect against excessively large JSON payloads (DoS protection)
+        const MAX_JSON_SIZE = 1024 * 1024; // 1MB limit
+        if (text.length > MAX_JSON_SIZE) {
+          return text; // Return original text if too large
+        }
         data = JSON.parse(text);
       } catch {
         // If not JSON, treat as CSV or return empty

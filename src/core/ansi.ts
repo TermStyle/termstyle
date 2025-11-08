@@ -138,7 +138,8 @@ export const stripAnsi = (str: string): string => {
     let result = '';
     let i = 0;
     while (i < str.length) {
-      if (str[i] === '\u001B' && str[i + 1] === '[') {
+      // Fix: Check bounds before accessing i+1 to prevent undefined comparison
+      if (i < str.length - 1 && str[i] === '\u001B' && str[i + 1] === '[') {
         // Skip ANSI sequence
         i += 2;
         while (i < str.length && (
