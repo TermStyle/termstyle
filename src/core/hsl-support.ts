@@ -190,8 +190,14 @@ export class HSLProcessor {
    */
   static monochromatic(hsl: HSLColor, count: number = 5): HSLColor[] {
     const colors: HSLColor[] = [];
+
+    // Fix: Handle edge case when count is 1 to prevent division by zero
+    if (count === 1) {
+      return [{ ...hsl }];
+    }
+
     const step = 100 / (count - 1);
-    
+
     for (let i = 0; i < count; i++) {
       colors.push({
         h: hsl.h,
@@ -199,7 +205,7 @@ export class HSLProcessor {
         l: this.clampPercent(i * step)
       });
     }
-    
+
     return colors;
   }
 

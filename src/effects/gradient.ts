@@ -232,7 +232,8 @@ function optimizedGradientBase(
     }
 
     const segment = Math.min(Math.floor(i / charsPerSegment), segments - 1);
-    const segmentProgress = (i % charsPerSegment) / charsPerSegment;
+    // Fix: Use subtraction instead of modulo to avoid floating-point issues
+    const segmentProgress = (i - segment * charsPerSegment) / charsPerSegment;
     
     const startColor = colorStops[segment];
     // Ensure we don't go out of bounds for the last segment

@@ -275,10 +275,18 @@ export class BatchProcessor<T, R> {
       });
     } finally {
       this.processing = false;
-      
-      // Process next batch if queue is not empty
-      if (this.queue.length > 0) {
-        this.scheduleBatch();
+
+      // Fix: Protect scheduleBatch() call in finally block
+      try {
+        // Process next batch if queue is not empty
+        if (this.queue.length > 0) {
+          this.scheduleBatch();
+        }
+      } catch (scheduleError) {
+        // Log scheduling errors but don't propagate from finally block
+        if (typeof console !== 'undefined' && console.error) {
+          console.error('Error scheduling next batch:', scheduleError);
+        }
       }
     }
   }

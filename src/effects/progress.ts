@@ -171,7 +171,9 @@ export class ProgressBar implements Disposable {
 
     const bar = filled + empty;
     const elapsed = (now - this.startTime) / 1000;
-    const eta = percent > 0 ? (elapsed / percent - elapsed) : 0;
+    // Fix: Cap ETA at reasonable maximum (24 hours) and require meaningful progress (>0.1%)
+    const rawEta = percent > 0.001 ? (elapsed / percent - elapsed) : 0;
+    const eta = Math.min(rawEta, 86400); // Cap at 24 hours
 
     let output = this.options.format
       .replace(':bar', bar)
@@ -198,11 +200,18 @@ export class ProgressBar implements Disposable {
     safeExecute(() => {
       // Hide cursor on first render using cursor manager
       cursorManager.hide(this.componentId);
-      
+
       this.options.stream.write('\r' + eraseLine() + output);
     }, undefined, () => {
-      // Handle stream errors gracefully
-      this.dispose();
+      // Fix: Protect dispose() call in error handler to prevent cascading failures
+      try {
+        this.dispose();
+      } catch (disposeError) {
+        // Silently ignore disposal errors in error handler to prevent infinite loops
+        if (typeof console !== 'undefined' && console.error) {
+          console.error('Error during progress bar disposal:', disposeError);
+        }
+      }
     });
   }
 

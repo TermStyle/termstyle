@@ -103,20 +103,21 @@ export class Animation implements Disposable {
     // Hide cursor using cursor manager
     cursorManager.hide(this.componentId);
     
-    // Resume from paused state or start fresh
-    let frame = this.pausedFrame || 1;
+    // Fix: Start frame at 0 instead of 1 to properly show progress 0.0 to 1.0
+    let frame = this.pausedFrame || 0;
     let iteration = this.pausedIteration || 0;
     // Ensure totalFrames is at least 1 to prevent division by zero
     const totalFrames = Math.max(1, Math.floor((this.options.duration || 1000) / (this.options.interval || 100)));
-    
+
     this.intervalId = setInterval(() => {
       // Double-check disposal state to prevent zombie timers
       if (this.isDisposed || !this.running) {
         this.stop();
         return;
       }
-      
-      const progress = (frame % totalFrames) / totalFrames;
+
+      // Fix: Calculate progress to properly range from 0.0 to 1.0
+      const progress = Math.min(1.0, frame / Math.max(1, totalFrames - 1));
       
       const success = safeExecute(() => {
         if (typeof process !== 'undefined' && process.stdout) {
@@ -151,10 +152,11 @@ export class Animation implements Disposable {
       }
       
       frame++;
-      
-      if (frame > totalFrames) {
+
+      // Fix: Reset frame when it reaches totalFrames (not totalFrames + 1)
+      if (frame >= totalFrames) {
         iteration++;
-        frame = 1;
+        frame = 0;
         
         if (this.options.iterations !== Infinity && this.options.iterations !== undefined && iteration >= this.options.iterations) {
           this.stop();
@@ -388,6 +390,10 @@ export class Spinner implements Disposable {
       
       const success = safeExecute(() => {
         if (typeof process !== 'undefined' && process.stdout) {
+          // Fix: Protect against empty frames array
+          if (this.frames.length === 0) {
+            return false;
+          }
           const frame = this.frames[this.currentFrame];
           process.stdout.write(`\r${frame} ${this.text}`);
           this.currentFrame = (this.currentFrame + 1) % this.frames.length;

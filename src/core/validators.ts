@@ -409,9 +409,13 @@ export class InputValidator {
    * Validate integer
    */
   static validateInteger(value: number, name: string, min?: number, max?: number): ValidationResult<number> {
-    const numberResult = this.validatePositiveNumber(value, name);
-    if (!numberResult.valid) {
-      return numberResult;
+    // Fix: Check type and finiteness first, without using validatePositiveNumber
+    // This allows 0 when min=0 is specified
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return {
+        valid: false,
+        error: `${name} must be a finite number, got ${value}`
+      };
     }
 
     if (!Number.isInteger(value)) {

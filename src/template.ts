@@ -11,14 +11,17 @@ function parseStyleTags(text: string, helpers: TemplateHelpers): string {
   // Parse from inside out to handle nesting
   let result = text;
   let changed = true;
-  
-  while (changed) {
+  let iterations = 0;
+  const MAX_ITERATIONS = 100; // Prevent infinite loops from malicious input
+
+  while (changed && iterations < MAX_ITERATIONS) {
     changed = false;
+    iterations++;
     const tagRegex = /\{([^}]+)\}([^{]*?)\{\/\1\}/g;
-    
+
     result = result.replace(tagRegex, (fullMatch, tagName, content) => {
       const helper = helpers[tagName];
-      
+
       if (helper instanceof Style) {
         changed = true;
         return helper.apply(content);
@@ -26,7 +29,7 @@ function parseStyleTags(text: string, helpers: TemplateHelpers): string {
         changed = true;
         return helper([content] as any);
       }
-      
+
       return fullMatch;
     });
   }
@@ -66,6 +69,12 @@ function parseInlineStyles(text: string, formatter: FormatterProxy): string {
       
       return fullMatch;
     } catch (error) {
+      // Fix: Add debug logging for swallowed errors
+      if (typeof process !== 'undefined' && process.env && process.env.DEBUG) {
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('Style parsing error:', error);
+        }
+      }
       return fullMatch; // Return unchanged on error
     }
   });
@@ -89,14 +98,17 @@ export function createTemplate(formatter: FormatterProxy, helpers: TemplateHelpe
         
         // Handle Style objects with apply method differently
         if (value && typeof value === 'object' && 'apply' in value && typeof value.apply === 'function') {
-          // Check if the next string starts with a backtick (template literal)
-          const nextStr = mutableStrings[i + 1] || '';
-          const backtickMatch = nextStr.match(/^`([^`]*)`(.*)/);
-          if (backtickMatch) {
-            // Apply the style to the content and update the next string
-            result += value.apply(backtickMatch[1]);
-            mutableStrings[i + 1] = backtickMatch[2];
-            return;
+          // Fix: Check bounds before accessing array element
+          if (i + 1 < mutableStrings.length) {
+            // Check if the next string starts with a backtick (template literal)
+            const nextStr = mutableStrings[i + 1];
+            const backtickMatch = nextStr.match(/^`([^`]*)`(.*)/);
+            if (backtickMatch) {
+              // Apply the style to the content and update the next string
+              result += value.apply(backtickMatch[1]);
+              mutableStrings[i + 1] = backtickMatch[2];
+              return;
+            }
           }
         }
         
@@ -125,14 +137,16 @@ export function createTemplateTag(options: { formatter?: FormatterProxy; helpers
 // Add parse function for backward compatibility
 export function parse(template: string, variables: Record<string, any> = {}): string {
   const helpers = createDefaultHelpers();
-  
+
   // Replace variables first
   let result = template;
   Object.entries(variables).forEach(([key, value]) => {
-    const regex = new RegExp(`{{${key}}}`, 'g');
+    // Escape special regex characters in key to prevent ReDoS attacks
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`{{${escapedKey}}}`, 'g');
     result = result.replace(regex, String(value));
   });
-  
+
   // Then parse style tags
   return parseStyleTags(result, helpers);
 }

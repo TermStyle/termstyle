@@ -66,6 +66,12 @@ export class ConditionalFormatter {
       try {
         isTrue = typeof condition === 'function' ? condition() : condition;
       } catch (error) {
+        // Fix: Add debug logging for swallowed errors
+        if (typeof process !== 'undefined' && process.env && process.env.DEBUG) {
+          if (typeof console !== 'undefined' && console.warn) {
+            console.warn('Condition evaluation error:', error);
+          }
+        }
         // If condition function throws, treat as false
         isTrue = false;
       }
@@ -309,6 +315,12 @@ conditional.when = function(condition: Condition | (() => Promise<boolean>), tex
     }
     return text;
   } catch (error) {
+    // Fix: Add debug logging for swallowed errors
+    if (typeof process !== 'undefined' && process.env && process.env.DEBUG) {
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('Conditional formatting error:', error);
+      }
+    }
     // If condition throws, return text unchanged
     return text;
   }

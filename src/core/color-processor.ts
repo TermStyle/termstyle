@@ -352,7 +352,8 @@ export class ColorProcessor {
     if (r === g && g === b) {
       if (r < 8) return 16;
       if (r > 248) return 231;
-      return Math.round(((r - 8) / 247) * 24) + 232;
+      // Fix: Use 23 instead of 24 to prevent overflow (232 + 23 = 255, not 256)
+      return Math.round(((r - 8) / 247) * 23) + 232;
     }
 
     // Convert to 6x6x6 color cube

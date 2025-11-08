@@ -308,6 +308,10 @@ class MemoryLeakDetector {
     snapshots: Array<{ time: number; memory: number; description?: string }>;
     recommendations: string[];
   } {
+    // Fix: Validate snapshots array has sufficient data before accessing
+    if (this.snapshots.length === 0) {
+      throw new Error('No snapshots available for analysis');
+    }
     if (this.snapshots.length < 2) {
       throw new Error('Need at least 2 snapshots to analyze');
     }
@@ -315,7 +319,7 @@ class MemoryLeakDetector {
     const first = this.snapshots[0];
     const last = this.snapshots[this.snapshots.length - 1];
     const totalIncrease = last.memory - first.memory;
-    
+
     // Calculate average increase per snapshot
     let totalDelta = 0;
     for (let i = 1; i < this.snapshots.length; i++) {
