@@ -160,8 +160,18 @@ export class Animation implements Disposable {
         
         if (this.options.iterations !== Infinity && this.options.iterations !== undefined && iteration >= this.options.iterations) {
           this.stop();
+          // FIX BUG-ERR-001: Wrap onComplete callback in try-catch to prevent crashes
           if (this.options.onComplete) {
-            this.options.onComplete();
+            try {
+              this.options.onComplete();
+            } catch (error) {
+              // Log error but continue cleanup to prevent resource leaks
+              if (typeof process !== 'undefined' && process.env && process.env.DEBUG) {
+                if (typeof console !== 'undefined' && console.error) {
+                  console.error('Error in onComplete callback:', error);
+                }
+              }
+            }
           }
         }
       }
@@ -431,7 +441,16 @@ export class Spinner implements Disposable {
   }
 
   update(text: string): void {
-    this.text = text;
+    // FIX BUG-ERR-002: Add input validation consistent with constructor
+    const textValidation = InputValidator.validateText(text);
+    if (!textValidation.valid) {
+      throw new AnimationError(
+        textValidation.error!,
+        ErrorCode.INVALID_TEXT_INPUT,
+        { text }
+      );
+    }
+    this.text = textValidation.value!.text;
   }
 
   updateColor(_color: string): void {

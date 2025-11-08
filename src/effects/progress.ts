@@ -198,10 +198,13 @@ export class ProgressBar implements Disposable {
     }
 
     safeExecute(() => {
-      // Hide cursor on first render using cursor manager
-      cursorManager.hide(this.componentId);
+      // FIX BUG-ERR-006: Check stream state before writing
+      if (this.options.stream && this.options.stream.writable && !this.options.stream.destroyed) {
+        // Hide cursor on first render using cursor manager
+        cursorManager.hide(this.componentId);
 
-      this.options.stream.write('\r' + eraseLine() + output);
+        this.options.stream.write('\r' + eraseLine() + output);
+      }
     }, undefined, () => {
       // Fix: Protect dispose() call in error handler to prevent cascading failures
       try {
@@ -231,23 +234,29 @@ export class ProgressBar implements Disposable {
 
   complete(): void {
     if (this.isDisposed) return;
-    
+
     this.current = this.options.total;
     this.render();
-    
+
     try {
-      this.options.stream.write('\n');
-      
-      // Show cursor using cursor manager
-      cursorManager.show(this.componentId);
-      
-      if (this.options.clear) {
-        this.options.stream.write('\r' + eraseLine());
+      // FIX BUG-ERR-006: Check stream state before writing
+      if (this.options.stream && this.options.stream.writable && !this.options.stream.destroyed) {
+        this.options.stream.write('\n');
+
+        // Show cursor using cursor manager
+        cursorManager.show(this.componentId);
+
+        if (this.options.clear) {
+          this.options.stream.write('\r' + eraseLine());
+        }
+      } else {
+        // Still show cursor even if stream is unavailable
+        cursorManager.show(this.componentId);
       }
     } catch (error) {
       // Ignore stream errors during completion
     }
-    
+
     this.dispose();
   }
 

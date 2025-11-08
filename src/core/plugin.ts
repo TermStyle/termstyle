@@ -74,8 +74,8 @@ export class PluginManager extends EventEmitter {
       throw new Error('Plugin must have an install method');
     }
 
-    // Validate version format (semver)
-    if (!/^\d+\.\d+\.\d+/.test(plugin.version)) {
+    // FIX BUG-SEC-009: Properly anchor semver validation regex
+    if (!/^\d+\.\d+\.\d+$/.test(plugin.version)) {
       throw new Error('Plugin version must follow semver format');
     }
   }
@@ -213,7 +213,9 @@ export class EmojiPlugin extends BasePlugin {
     api.addEffect('emoji', (text: string) => {
       let result = text;
       for (const [code, emoji] of this.emojiMap) {
-        result = result.replace(new RegExp(code, 'g'), emoji);
+        // FIX BUG-SEC-005: Escape regex special characters to prevent ReDoS
+        const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        result = result.replace(new RegExp(escaped, 'g'), emoji);
       }
       return result;
     });
@@ -230,14 +232,22 @@ export class MarkdownPlugin extends BasePlugin {
 
   install(api: TermStyleAPI): void {
     api.addEffect('markdown', (text: string) => {
+      // FIX BUG-SEC-004: Use non-backtracking patterns to prevent ReDoS
+      // Add input length validation
+      const MAX_INPUT_LENGTH = 100000; // 100KB limit
+      if (text.length > MAX_INPUT_LENGTH) {
+        return text; // Return unchanged if too large
+      }
+
       return text
-        .replace(/\*\*(.+?)\*\*/g, '\u001B[1m$1\u001B[22m') // Bold
-        .replace(/\*(.+?)\*/g, '\u001B[3m$1\u001B[23m')     // Italic
-        .replace(/`(.+?)`/g, '\u001B[7m$1\u001B[27m')       // Code
-        .replace(/~~(.+?)~~/g, '\u001B[9m$1\u001B[29m')     // Strikethrough
-        .replace(/^# (.+)$/gm, '\u001B[1;4m$1\u001B[0m')    // H1
-        .replace(/^## (.+)$/gm, '\u001B[1m$1\u001B[0m')     // H2
-        .replace(/^### (.+)$/gm, '\u001B[4m$1\u001B[0m');   // H3
+        // Use character class negation instead of .+? to prevent backtracking
+        .replace(/\*\*([^\*]{1,1000})\*\*/g, '\u001B[1m$1\u001B[22m') // Bold - limit content length
+        .replace(/\*([^\*]{1,1000})\*/g, '\u001B[3m$1\u001B[23m')     // Italic - limit content length
+        .replace(/`([^`]{1,1000})`/g, '\u001B[7m$1\u001B[27m')        // Code - limit content length
+        .replace(/~~([^~]{1,1000})~~/g, '\u001B[9m$1\u001B[29m')      // Strikethrough - limit content length
+        .replace(/^# ([^\n]{1,500})$/gm, '\u001B[1;4m$1\u001B[0m')    // H1 - limit line length
+        .replace(/^## ([^\n]{1,500})$/gm, '\u001B[1m$1\u001B[0m')     // H2 - limit line length
+        .replace(/^### ([^\n]{1,500})$/gm, '\u001B[4m$1\u001B[0m');   // H3 - limit line length
     });
 
     api.addStyle('heading1', ['bold', 'underline']);
