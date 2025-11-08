@@ -136,6 +136,11 @@ if (typeof process !== 'undefined' && process.stdout && typeof process.stdout.on
     if (!resizeListener) {
       resizeListener = updateTerminalInfo;
       process.stdout.on('resize', resizeListener);
+
+      // Register cleanup on process exit to prevent memory leaks
+      if (typeof process.once === 'function') {
+        process.once('exit', cleanup);
+      }
     }
   } catch {
     // Ignore event listener registration errors

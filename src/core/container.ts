@@ -129,6 +129,10 @@ export class Container {
           }
           this.resolving.delete(name);
           return resolved;
+        }).catch(error => {
+          // Clean up resolving state on error
+          this.resolving.delete(name);
+          throw error;
         });
       }
 
@@ -151,10 +155,14 @@ export class Container {
     }
 
     const deps = dependencies.map(dep => this.resolve(dep));
-    
+
     // Check if any dependency is async
     if (deps.some(dep => dep instanceof Promise)) {
-      return Promise.all(deps).then(resolved => (factory as any)(...resolved));
+      return Promise.all(deps)
+        .then(resolved => (factory as any)(...resolved))
+        .catch(error => {
+          throw new Error(`Failed to resolve dependencies for factory: ${error.message}`);
+        });
     }
 
     return (factory as any)(...deps);
@@ -181,9 +189,17 @@ export class Container {
 
   // Dispose all singletons
   dispose(): void {
-    for (const instance of this.instances.values()) {
+    // Dispose each resource with error isolation
+    for (const [name, instance] of this.instances.entries()) {
       if (instance && typeof instance.dispose === 'function') {
-        instance.dispose();
+        try {
+          instance.dispose();
+        } catch (error) {
+          // Log but don't stop disposal of other resources
+          if (typeof console !== 'undefined' && console.error) {
+            console.error(`Error disposing service '${name}':`, error);
+          }
+        }
       }
     }
     this.instances.clear();
