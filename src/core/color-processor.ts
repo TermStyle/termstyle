@@ -352,8 +352,10 @@ export class ColorProcessor {
     if (r === g && g === b) {
       if (r < 8) return 16;
       if (r > 248) return 231;
-      // Fix: Use 23 instead of 24 to prevent overflow (232 + 23 = 255, not 256)
-      return Math.round(((r - 8) / 247) * 23) + 232;
+      // FIX BUG-FUNC-002: Use correct denominator 230 instead of 247
+      // Grayscale range: 232-255 (24 colors), RGB range: 8-238 (230 values)
+      // Formula: gray_index = round((rgb - 8) / 230 * 23)
+      return Math.round(((r - 8) / 230) * 23) + 232;
     }
 
     // Convert to 6x6x6 color cube

@@ -73,8 +73,9 @@ export class Style {
           const index = indicesToRemove[i];
           if (index >= 0 && index < newCodes.length) {
             newCodes.splice(index, 1);
-            // Calculate reset index safely with proper bounds checking
-            const resetIndex = Math.min(newResetCodes.length - 1, Math.max(0, newResetCodes.length - 1 - i));
+            // FIX BUG-FUNC-004: Use actual code index, not loop variable
+            // The reset codes are in reverse order, so we need to find the matching reset code
+            const resetIndex = newResetCodes.length - 1 - index;
             if (resetIndex >= 0 && resetIndex < newResetCodes.length) {
               newResetCodes.splice(resetIndex, 1);
             }
@@ -103,15 +104,16 @@ export class Style {
           const index = indicesToRemove[i];
           if (index >= 0 && index < newCodes.length) {
             newCodes.splice(index, 1);
-            // Calculate reset index safely with proper bounds checking
-            const resetIndex = Math.min(newResetCodes.length - 1, Math.max(0, newResetCodes.length - 1 - i));
+            // FIX BUG-FUNC-004: Use actual code index, not loop variable
+            // The reset codes are in reverse order, so we need to find the matching reset code
+            const resetIndex = newResetCodes.length - 1 - index;
             if (resetIndex >= 0 && resetIndex < newResetCodes.length) {
               newResetCodes.splice(resetIndex, 1);
             }
           }
         }
       }
-      
+
       return new Style(
         [...newCodes, code],
         [resetCode, ...newResetCodes],
