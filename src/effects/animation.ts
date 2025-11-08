@@ -106,7 +106,8 @@ export class Animation implements Disposable {
     // Resume from paused state or start fresh
     let frame = this.pausedFrame || 1;
     let iteration = this.pausedIteration || 0;
-    const totalFrames = Math.floor((this.options.duration || 1000) / (this.options.interval || 100));
+    // Ensure totalFrames is at least 1 to prevent division by zero
+    const totalFrames = Math.max(1, Math.floor((this.options.duration || 1000) / (this.options.interval || 100)));
     
     this.intervalId = setInterval(() => {
       // Double-check disposal state to prevent zombie timers
@@ -498,7 +499,8 @@ export function spinner(
 // Add pulse animation function for backward compatibility
 export function pulse(text: string, options: { color?: string; duration?: number } = {}): string[] {
   const frames: string[] = [];
-  const totalFrames = Math.floor((options.duration || 1000) / 100); // 100ms per frame
+  // Ensure totalFrames is at least 1 to prevent empty array
+  const totalFrames = Math.max(1, Math.floor((options.duration || 1000) / 100)); // 100ms per frame
   
   for (let i = 0; i < totalFrames; i++) {
     let styledText = text;

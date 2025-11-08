@@ -88,7 +88,10 @@ export function safeExecute<T>(
       try {
         errorHandler(error as Error);
       } catch (handlerError) {
-        // Ignore handler errors to prevent cascading failures
+        // Log handler errors but don't propagate to prevent cascading failures
+        if (typeof console !== 'undefined' && console.error) {
+          console.error('Error in error handler:', handlerError);
+        }
       }
     }
     return fallback;
@@ -110,7 +113,10 @@ export async function safeExecuteAsync<T>(
       try {
         errorHandler(error as Error);
       } catch (handlerError) {
-        // Ignore handler errors
+        // Log handler errors but don't propagate
+        if (typeof console !== 'undefined' && console.error) {
+          console.error('Error in async error handler:', handlerError);
+        }
       }
     }
     return fallback;

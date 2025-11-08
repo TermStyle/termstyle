@@ -48,7 +48,10 @@ export class PluginManager extends EventEmitter {
       try {
         await plugin.uninstall();
       } catch (error) {
-        // Silently handle uninstall errors
+        // Log uninstall errors for debugging but don't block unregistration
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn(`Plugin '${name}' uninstall error:`, error);
+        }
       }
     }
 

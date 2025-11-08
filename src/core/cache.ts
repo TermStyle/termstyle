@@ -259,7 +259,12 @@ export class BatchProcessor<T, R> {
     try {
       const items = batch.map(b => b.item);
       const results = this.processor(items);
-      
+
+      // Validate that processor returned correct number of results
+      if (!Array.isArray(results) || results.length !== batch.length) {
+        throw new Error(`Batch processor returned ${results?.length ?? 0} results but expected ${batch.length}`);
+      }
+
       batch.forEach((b, i) => {
         b.resolve(results[i]);
       });
