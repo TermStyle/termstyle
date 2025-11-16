@@ -11,7 +11,6 @@ function parseStyleTags(text: string, helpers: TemplateHelpers): string {
   // FIX BUG-SEC-001: Prevent ReDoS with input length validation and reduced iterations
   const MAX_INPUT_LENGTH = 50000; // 50KB limit
   const MAX_ITERATIONS = 10; // Reduced from 100 to prevent DoS
-  const MAX_NESTING_DEPTH = 10;
 
   if (text.length > MAX_INPUT_LENGTH) {
     throw new Error(`Template text too large (max ${MAX_INPUT_LENGTH} characters)`);

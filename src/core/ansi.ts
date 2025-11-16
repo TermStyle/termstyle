@@ -87,15 +87,26 @@ export const hexToRgb = (hex: string): [number, number, number] => {
     return [0, 0, 0]; // Default to black for invalid input
   }
   let cleanHex = hex.replace('#', '');
-  
+
   // Handle 3-character hex codes
   if (cleanHex.length === 3) {
     cleanHex = cleanHex.split('').map(char => char + char).join('');
   }
-  
+
+  // Validate hex string length
+  if (cleanHex.length !== 6) {
+    return [0, 0, 0]; // Default to black for invalid hex length
+  }
+
   const r = parseInt(cleanHex.slice(0, 2), 16);
   const g = parseInt(cleanHex.slice(2, 4), 16);
   const b = parseInt(cleanHex.slice(4, 6), 16);
+
+  // Validate parsed values to prevent NaN from malformed hex strings
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    return [0, 0, 0]; // Default to black for invalid hex characters
+  }
+
   return [r, g, b];
 };
 
