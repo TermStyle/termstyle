@@ -3,14 +3,8 @@
  * Provides test utilities and global configuration
  */
 
-// Extend Jest matchers if needed
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      // Add custom matchers here if needed
-    }
-  }
-}
+// FIX BUG-003: Remove deprecated namespace usage and unused variable
+// Jest matchers are automatically available through @types/jest
 
 // Setup test environment
 beforeAll(() => {

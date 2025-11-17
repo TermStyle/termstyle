@@ -241,8 +241,9 @@ export class MarkdownPlugin extends BasePlugin {
 
       return text
         // Use character class negation instead of .+? to prevent backtracking
-        .replace(/\*\*([^\*]{1,1000})\*\*/g, '\u001B[1m$1\u001B[22m') // Bold - limit content length
-        .replace(/\*([^\*]{1,1000})\*/g, '\u001B[3m$1\u001B[23m')     // Italic - limit content length
+        // FIX BUG-002: Remove unnecessary escape for * in character class (already special in [])
+        .replace(/\*\*([^*]{1,1000})\*\*/g, '\u001B[1m$1\u001B[22m') // Bold - limit content length
+        .replace(/\*([^*]{1,1000})\*/g, '\u001B[3m$1\u001B[23m')     // Italic - limit content length
         .replace(/`([^`]{1,1000})`/g, '\u001B[7m$1\u001B[27m')        // Code - limit content length
         .replace(/~~([^~]{1,1000})~~/g, '\u001B[9m$1\u001B[29m')      // Strikethrough - limit content length
         .replace(/^# ([^\n]{1,500})$/gm, '\u001B[1;4m$1\u001B[0m')    // H1 - limit line length
