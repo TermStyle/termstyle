@@ -75,16 +75,22 @@ export class HSLProcessor {
    */
   static parse(hslString: string): HSLColor | null {
     const match = hslString.trim().match(/^hsla?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)%,\s*(\d+(?:\.\d+)?)%(?:,\s*([\d.]+))?\)$/);
-    
+
     if (!match) {
       return null;
     }
 
-    return this.create(
-      parseFloat(match[1]),
-      parseFloat(match[2]),
-      parseFloat(match[3])
-    );
+    // FIX BUG-001: Validate parseFloat results to prevent NaN propagation
+    const h = parseFloat(match[1]);
+    const s = parseFloat(match[2]);
+    const l = parseFloat(match[3]);
+
+    // Check if any value is NaN
+    if (isNaN(h) || isNaN(s) || isNaN(l)) {
+      return null;
+    }
+
+    return this.create(h, s, l);
   }
 
   /**
