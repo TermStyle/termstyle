@@ -116,8 +116,8 @@ export class Animation implements Disposable {
         return;
       }
 
-      // Fix: Calculate progress to properly range from 0.0 to 1.0
-      const progress = Math.min(1.0, frame / Math.max(1, totalFrames - 1));
+      // FIX BUG-008: Handle single-frame animations properly to avoid division by zero
+      const progress = totalFrames === 1 ? 1.0 : Math.min(1.0, frame / (totalFrames - 1));
       
       const success = safeExecute(() => {
         if (typeof process !== 'undefined' && process.stdout) {
@@ -371,7 +371,16 @@ export class Spinner implements Disposable {
       this.frames = [...spinners.dots.frames];
       this.interval = finalInterval;
     }
-    
+
+    // FIX BUG-004: Validate frames array is not empty in constructor
+    if (this.frames.length === 0) {
+      throw new AnimationError(
+        'Spinner frames array cannot be empty',
+        ErrorCode.ANIMATION_FRAME_ERROR,
+        { spinner: spinnerName }
+      );
+    }
+
     // Generate unique component ID for cursor management
     this.componentId = `spinner-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
     

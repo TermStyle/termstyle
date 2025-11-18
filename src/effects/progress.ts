@@ -401,8 +401,17 @@ export function multiProgress(options?: MultiProgressOptions): MultiProgress {
 
 // Add bar method for backward compatibility
 export function bar(current: number, total: number, options?: ProgressBarOptions): string {
+  // FIX BUG-006: Validate current and total are finite numbers
+  if (!Number.isFinite(current) || !Number.isFinite(total)) {
+    throw new ValidationError(
+      'current and total must be finite numbers',
+      ErrorCode.INVALID_NUMBER_INPUT,
+      { current, total }
+    );
+  }
+
   const barOptions = { ...options, total };
-  
+
   // Create the bar string
   const percent = total > 0 ? current / total : 0;
   const width = barOptions.width || 40;

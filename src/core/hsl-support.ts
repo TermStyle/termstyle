@@ -195,6 +195,11 @@ export class HSLProcessor {
    * Generate monochromatic colors (same hue, different lightness)
    */
   static monochromatic(hsl: HSLColor, count: number = 5): HSLColor[] {
+    // FIX BUG-005: Validate count is positive
+    if (count <= 0 || !Number.isFinite(count)) {
+      throw new Error('count must be a positive finite number');
+    }
+
     const colors: HSLColor[] = [];
 
     // Fix: Handle edge case when count is 1 to prevent division by zero
