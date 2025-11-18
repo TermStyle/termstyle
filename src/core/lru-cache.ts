@@ -151,7 +151,8 @@ export class LRUCache<K, V> {
     const lastNode = this.tail;
     this.removeNode(lastNode);
     this.cache.delete(lastNode.key);
-    this.size--;
+    // FIX BUG-010: Prevent size underflow in case of cache corruption
+    this.size = Math.max(0, this.size - 1);
   }
 }
 

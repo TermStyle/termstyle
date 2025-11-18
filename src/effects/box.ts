@@ -78,14 +78,47 @@ function wrapText(text: string, width: number): string[] {
 
   for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
-    if (stripAnsi(testLine).length <= width) {
+    const testLineLength = stripAnsi(testLine).length;
+
+    if (testLineLength <= width) {
       currentLine = testLine;
     } else {
+      // Save current line if it exists
       if (currentLine) lines.push(currentLine);
-      currentLine = word;
+
+      // FIX BUG-003: Handle words longer than width by splitting them
+      const wordLength = stripAnsi(word).length;
+      if (wordLength > width) {
+        // Split the long word into chunks that fit
+        let remainingWord = word;
+        while (stripAnsi(remainingWord).length > width) {
+          // Find the split point (handle ANSI codes properly)
+          let splitPoint = 0;
+          let visibleLength = 0;
+          for (let i = 0; i < remainingWord.length && visibleLength < width; i++) {
+            // Skip ANSI escape sequences when counting visible length
+            if (remainingWord[i] === '\x1b' && remainingWord[i + 1] === '[') {
+              const endIdx = remainingWord.indexOf('m', i);
+              if (endIdx !== -1) {
+                i = endIdx;
+                splitPoint = i + 1;
+                continue;
+              }
+            }
+            visibleLength++;
+            splitPoint = i + 1;
+          }
+
+          lines.push(remainingWord.slice(0, splitPoint));
+          remainingWord = remainingWord.slice(splitPoint);
+        }
+        currentLine = remainingWord;
+      } else {
+        currentLine = word;
+      }
     }
   }
-  
+
   if (currentLine) lines.push(currentLine);
   return lines;
 }
@@ -130,13 +163,15 @@ export function box(content: string, options: BoxOptions = {}): string {
   
   let lines = content.split('\n');
   
+  // FIX BUG-002: Validate that computed width is positive before wrapping
   if (width && wrap) {
-    lines = lines.flatMap(line => wrapText(line, width - pad.left - pad.right - 2));
+    const availableWidth = Math.max(1, width - pad.left - pad.right - 2);
+    lines = lines.flatMap(line => wrapText(line, availableWidth));
   }
   
-  const maxLineLength = Math.max(
-    ...lines.map(line => stripAnsi(line).length),
-    0
+  // FIX BUG-001: Use reduce instead of spread operator to prevent stack overflow with large arrays
+  const maxLineLength = lines.reduce((max, line) =>
+    Math.max(max, stripAnsi(line).length), 0
   );
   
   // Calculate minimum width needed for the title (including spacing)

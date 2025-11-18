@@ -194,22 +194,27 @@ export function memoize<T extends (...args: any[]) => any>(
   
   return ((...args: Parameters<T>): ReturnType<T> => {
     const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
-    
+
+    // FIX BUG-007: Implement proper LRU by updating access order on cache hits
     if (cache.has(key)) {
-      return cache.get(key)!;
+      const value = cache.get(key)!;
+      // Delete and re-add to move to end (most recently used)
+      cache.delete(key);
+      cache.set(key, value);
+      return value;
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
-    
-    // Limit cache size
+
+    // Limit cache size - now truly LRU, not FIFO
     if (cache.size > 1000) {
       const firstKey = cache.keys().next().value;
       if (firstKey !== undefined) {
         cache.delete(firstKey);
       }
     }
-    
+
     return result;
   }) as T;
 }

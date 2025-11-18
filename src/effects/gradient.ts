@@ -210,30 +210,35 @@ function optimizedGradientBase(
   // Pre-compute all colors for performance
   const colorStops = validColors.map(convertColorInput);
   const segments = Math.max(1, colorStops.length - 1);
-  const charsPerSegment = chars.length / segments;
-  
+
+  // FIX BUG-009: Use integer-based calculation to avoid floating-point precision issues
+  const totalChars = chars.length;
+
   // Use StringBuilder for better performance than array joining
   const builder = new StringBuilder();
-  
+
   // Pre-calculate common ANSI sequences for reuse
   const colorReset = '\u001b[39m';
   const colorLevel = termInfo.colorLevel;
-  
+
   // Optimize interpolation function selection
   const useHsvInterpolation = options.interpolation === 'bezier' || options.hsvSpin;
-  
+
   for (let i = 0; i < chars.length; i++) {
     const char = chars[i];
-    
+
     // Fast path for whitespace
     if (char === ' ' || char === '\n' || char === '\t') {
       builder.append(char);
       continue;
     }
 
-    const segment = Math.min(Math.floor(i / charsPerSegment), segments - 1);
-    // Fix: Use subtraction instead of modulo to avoid floating-point issues
-    const segmentProgress = (i - segment * charsPerSegment) / charsPerSegment;
+    // Use integer arithmetic for better precision
+    const segment = Math.min(Math.floor((i * segments) / totalChars), segments - 1);
+    const segmentStart = Math.floor((segment * totalChars) / segments);
+    const segmentEnd = Math.floor(((segment + 1) * totalChars) / segments);
+    const segmentLength = segmentEnd - segmentStart;
+    const segmentProgress = segmentLength > 0 ? (i - segmentStart) / segmentLength : 0;
     
     const startColor = colorStops[segment];
     // Ensure we don't go out of bounds for the last segment
