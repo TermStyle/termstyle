@@ -216,35 +216,39 @@ export function box(content: string, options: BoxOptions = {}): string {
   if (title) {
     const titleLength = stripAnsi(title).length;
     const availableSpace = contentWidth - titleLength - 2; // -2 for the spaces around title
-    
+
+    // FIX BUG-001: Validate availableSpace is non-negative before using in .repeat()
+    // When title is too long, prevent RangeError by ensuring repeat count is >= 0
+    const safeAvailableSpace = Math.max(0, availableSpace);
+
     let leftPadding: string, rightPadding: string;
-    
+
     switch (titleAlignment) {
       case 'center': {
-        const leftSpaces = Math.ceil(availableSpace / 2);
-        const rightSpaces = availableSpace - leftSpaces;
+        const leftSpaces = Math.ceil(safeAvailableSpace / 2);
+        const rightSpaces = safeAvailableSpace - leftSpaces;
         leftPadding = style.horizontal.repeat(leftSpaces) + ' ';
         rightPadding = ' ' + style.horizontal.repeat(rightSpaces);
         break;
       }
       case 'left': {
         leftPadding = ' ';
-        rightPadding = ' ' + style.horizontal.repeat(availableSpace);
+        rightPadding = ' ' + style.horizontal.repeat(safeAvailableSpace);
         break;
       }
       case 'right': {
-        leftPadding = style.horizontal.repeat(availableSpace) + ' ';
+        leftPadding = style.horizontal.repeat(safeAvailableSpace) + ' ';
         rightPadding = ' ';
         break;
       }
       default: {
-        const defaultLeftSpaces = Math.floor(availableSpace / 2);
-        const defaultRightSpaces = availableSpace - defaultLeftSpaces;
+        const defaultLeftSpaces = Math.floor(safeAvailableSpace / 2);
+        const defaultRightSpaces = safeAvailableSpace - defaultLeftSpaces;
         leftPadding = style.horizontal.repeat(defaultLeftSpaces) + ' ';
         rightPadding = ' ' + style.horizontal.repeat(defaultRightSpaces);
       }
     }
-    
+
     topBorder = style.topLeft + leftPadding + title + rightPadding + style.topRight;
   }
   

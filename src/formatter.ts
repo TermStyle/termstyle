@@ -16,17 +16,18 @@ export class Formatter {
   }
 
   private createProxy(style: Style): FormatterProxy {
-    const formatter = (...args: any[]): string => {
+    // FIX BUG-005: Use unknown[] for better type safety in internal implementation
+    const formatter = (...args: unknown[]): string => {
       if (args.length === 0) return '';
-      
+
       if (args.length === 1 && typeof args[0] === 'string') {
         return style.apply(args[0]);
       }
-      
+
       if (Array.isArray(args[0]) && 'raw' in args[0]) {
         return this.template(style, args[0] as TemplateStringsArray, ...args.slice(1));
       }
-      
+
       return style.apply(args.map(String).join(' '));
     };
 
@@ -58,16 +59,17 @@ export class Formatter {
     });
   }
 
-  private template(style: Style, strings: TemplateStringsArray, ...values: any[]): string {
+  // FIX BUG-005: Use unknown[] for better type safety
+  private template(style: Style, strings: TemplateStringsArray, ...values: unknown[]): string {
     let result = '';
-    
+
     strings.forEach((str, i) => {
       result += str;
       if (i < values.length) {
         result += String(values[i]);
       }
     });
-    
+
     return style.apply(result);
   }
 
