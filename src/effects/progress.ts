@@ -158,8 +158,15 @@ export class ProgressBar implements Disposable {
     let filled = this.options.complete.repeat(Math.max(0, filledLength));
     const empty = this.options.incomplete.repeat(Math.max(0, emptyLength));
 
+    // FIX BUG-004: Handle head character properly when filledLength === 1
     if (this.options.head && filledLength > 0 && filledLength < this.options.width) {
-      filled = filled.slice(0, -1) + this.options.head;
+      if (filledLength === 1) {
+        // With only 1 char, just show the head
+        filled = this.options.head;
+      } else {
+        // Otherwise, replace last char with head
+        filled = filled.slice(0, -1) + this.options.head;
+      }
     }
 
     if (this.options.barColor) {
@@ -268,13 +275,22 @@ export class ProgressBar implements Disposable {
     let filled = this.options.complete.repeat(filledLength);
     const empty = this.options.incomplete.repeat(emptyLength);
 
+    // FIX BUG-004: Handle head character properly when filledLength === 1
     if (this.options.head && filledLength > 0 && filledLength < this.options.width) {
-      filled = filled.slice(0, -1) + this.options.head;
+      if (filledLength === 1) {
+        // With only 1 char, just show the head
+        filled = this.options.head;
+      } else {
+        // Otherwise, replace last char with head
+        filled = filled.slice(0, -1) + this.options.head;
+      }
     }
 
     const bar = filled + empty;
     const elapsed = (Date.now() - this.startTime) / 1000;
-    const eta = percent > 0 ? (elapsed / percent - elapsed) : 0;
+    // FIX BUG-002 & BUG-003: Match render() method - use 0.001 threshold and cap ETA at 24 hours
+    const rawEta = percent > 0.001 ? (elapsed / percent - elapsed) : 0;
+    const eta = Math.min(rawEta, 86400); // Cap at 24 hours
 
     return this.options.format
       .replace(':bar', bar)
